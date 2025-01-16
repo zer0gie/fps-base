@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a40bd7721f097604cb5bc9c39441343a, type: 3}
+  m_Name: AK74
+  m_EditorClassIdentifier: 
+  weaponName: AK - 74
+  clipSize: 30
+  stackSize: 180
+  spreadIntensity: 0.15
+  maxShootDistance: 500
+  bulletVelocity: 500
+  shootingSound: {fileID: 8300000, guid: c0d55af200db23b47b678220f480efc9, type: 3}
+  reloadSound: {fileID: 8300000, guid: 1092b669e95a80f4da30f62b9140e9c9, type: 3}
+  emptyMagazineSound: {fileID: 8300000, guid: 5cb82a11f38e92146b2d7b690a7f2d09, type: 3}
+  idleAnimation:
+    _FadeDuration: 0.25
+    _Speed: 1
+    _Events:
+      _NormalizedTimes: []
+      _Callbacks: []
+      _Names: []
+    _Clip: {fileID: 7400000, guid: d7ce7f30247296048941fb0899f687f0, type: 2}
+    _NormalizedStartTime: NaN
+  shootAnimation:
+    _FadeDuration: 0.25
+    _Speed: 1
+    _Events:
+      _NormalizedTimes: []
+      _Callbacks: []
+      _Names: []
+    _Clip: {fileID: 7400000, guid: 8a90429ac9821ff4da4afed290aa7eb0, type: 2}
+    _NormalizedStartTime: NaN
+  reloadAnimation:
+    _FadeDuration: 0.25
+    _Speed: 1
+    _Events:
+      _NormalizedTimes: []
+      _Callbacks: []
+      _Names: []
+    _Clip: {fileID: 7400000, guid: 7eb434366af460a4d961fa18a7ea3003, type: 2}
+    _NormalizedStartTime: NaN
+  takeAnimation:
+    _FadeDuration: 0.25
+    _Speed: 1
+    _Events:
+      _NormalizedTimes: []
+      _Callbacks: []
+      _Names: []
+    _Clip: {fileID: 7400000, guid: 625264ad768da1e46a7090af8badcaf7, type: 2}
+    _NormalizedStartTime: NaN
+  references:
+    version: 2
+    RefIds: []
