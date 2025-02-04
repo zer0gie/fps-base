@@ -1,0 +1,366 @@
+using System;
+using System.Threading;
+using Animancer;
+using Code.Audio;
+using Code.ScriptableObjects;
+using Code.UI;
+using Code.WeaponFSM;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using Zenject;
+
+namespace Code.Weapon
+{
+    public class Weapon : MonoBehaviour
+    {
+        [Header("Global Settings")] 
+        [SerializeField] private WeaponSettingsSO weaponSettings;
+
+        [Header("Weapon Shoot Mode")] 
+        [SerializeField] private ShootMode weaponShootMode;
+
+        [Header("Shooting effects")] 
+        [SerializeField] private GameObject muzzleEffect;
+
+        private ParticleSystem _weaponParticleSystem;
+    
+        private WeaponStateMachine _weaponStateMachine;
+    
+        private int _currentAmmo;
+        private int _stackAmmo;
+        
+        private bool _isShootingButtonHolding;
+        private bool _isReloading;
+        private bool _isShooting;
+        private bool _isEquipping;
+        private bool _weaponInitialized;
+
+        [Header("Bullet Settings")] 
+        [SerializeField] private GameObject bulletPrefab;
+
+        [SerializeField] private Transform bulletSpawn;
+
+        [Header("Animancer")] 
+        [SerializeField] private AnimancerComponent weaponAnimancer;
+
+        // Dependencies
+        private IAudioManager _audioManager;
+        private IUIManager _uiManager;
+        private SignalBus _signalBus;
+        private IBulletManager _bulletManager;
+        
+        private const int EMPTY_MAGAZINE_SOUND_DELAY = 150;
+
+        [Inject]
+        public void Construct(IAudioManager audioManager, SignalBus signalBus, IUIManager uiManager,
+            IBulletManager bulletManager)
+        {
+            _audioManager = audioManager;
+            _signalBus = signalBus;
+            _uiManager = uiManager;
+            _bulletManager = bulletManager;
+
+            _currentAmmo = weaponSettings.clipSize;
+            _stackAmmo = weaponSettings.stackSize;
+            _weaponParticleSystem = muzzleEffect.GetComponent<ParticleSystem>();
+
+            InitializeWeaponStateMachine();
+
+            UniTask.SwitchToMainThread();
+        }
+        protected void OnEnable()
+        {
+            _signalBus.Subscribe<FireActionStartedSignal>(OnFireStarted);
+            _signalBus.Subscribe<FireActionCancelledSignal>(OnFireCancelled);
+            _signalBus.Subscribe<ReloadPerformedSignal>(OnReloadPerformed);
+        
+            _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
+            _uiManager.ShowAmmoPanel();
+            
+            if (!_weaponInitialized)
+            {
+                _isEquipping = false;
+                _isShootingButtonHolding = false;
+                _isReloading = false;
+                _isShooting = false;
+                
+                _weaponInitialized = true;
+                return;
+            }
+            
+            _weaponStateMachine.TrySetState<WeaponStateEquip>();
+        }
+        protected void OnDisable()
+        {
+            weaponAnimancer.Stop();
+            _audioManager.StopWeaponSounds();
+            _weaponStateMachine.ForceSetState<WeaponStateInactive>();
+            
+            _uiManager.HideAmmoPanel(); 
+        
+            _signalBus.Unsubscribe<FireActionStartedSignal>(OnFireStarted);
+            _signalBus.Unsubscribe<FireActionCancelledSignal>(OnFireCancelled);
+            _signalBus.Unsubscribe<ReloadPerformedSignal>(OnReloadPerformed);
+        }
+        private void OnReloadPerformed()
+        {
+            _weaponStateMachine.TrySetState<WeaponStateReload>();
+        }
+    
+        private void OnFireCancelled()
+        {
+            _isShootingButtonHolding = false;
+        }
+    
+        private void OnFireStarted()
+        {
+            _isShootingButtonHolding = true;
+            _weaponStateMachine.TrySetState<WeaponStateShoot>();
+        }
+    
+        private void InitializeWeaponStateMachine()
+        {
+            _weaponStateMachine = new WeaponStateMachine();
+            _weaponStateMachine.AddState(new WeaponStateIdle(_weaponStateMachine, this));
+            _weaponStateMachine.AddState(new WeaponStateReload(_weaponStateMachine, this));
+            _weaponStateMachine.AddState(new WeaponStateShoot(_weaponStateMachine, this));
+            _weaponStateMachine.AddState(new WeaponStateEquip(_weaponStateMachine, this));
+            _weaponStateMachine.AddState(new WeaponStateInactive(_weaponStateMachine, this));
+        }
+
+        public async UniTask EquipAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _isEquipping = true;
+                var state = weaponAnimancer.Play(weaponSettings.takeAnimation, 0.25f);
+                await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), cancellationToken: cancellationToken);
+                
+                _isEquipping = false;
+                _weaponStateMachine.TrySetState<WeaponStateIdle>();
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("Weapon equipping was cancelled");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"EquipWeaponAsync(): {e.Message}");
+            }
+            finally
+            {
+                _isEquipping = false;
+            }
+        }
+        public void Idle()
+        {
+            weaponAnimancer.Play(weaponSettings.idleAnimation, 0.25f);
+        }
+
+        public async UniTask ShootingAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _isShooting = true;
+
+                if (_currentAmmo <= 0) // Empty magazine
+                {
+                    _audioManager.PlayWeaponSound(weaponSettings.emptyMagazineSound);
+                    await UniTask.Delay(EMPTY_MAGAZINE_SOUND_DELAY, 
+                        cancellationToken: cancellationToken);
+                    _isShooting = false;
+                    _weaponStateMachine.TrySetState<WeaponStateIdle>();
+                    return;
+                }
+                
+                if (weaponShootMode is ShootMode.Auto)
+                {
+                    while (_isShootingButtonHolding && _currentAmmo > 0)
+                    {
+                        weaponAnimancer.Stop();
+                        var state = weaponAnimancer.Play(weaponSettings.shootAnimation);
+                        ExecuteShot();
+                        
+                        await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(),
+                            cancellationToken: cancellationToken);
+                    }
+                }
+                if (weaponShootMode is ShootMode.Single or ShootMode.Shotgun)
+                {
+                    var state = weaponAnimancer.Play(weaponSettings.shootAnimation);
+                    ExecuteShot();
+                    
+                    await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), 
+                        cancellationToken: cancellationToken);
+                }
+                _isShooting = false;
+                _weaponStateMachine.TrySetState<WeaponStateIdle>();
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("Shooting operation was cancelled");
+                _isShooting = false;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"ShootingAsync(): {e.Message}");
+            }
+        }
+        private void ExecuteShot()
+        {
+            _audioManager.PlayWeaponSound(weaponSettings.shootingSound);
+            _weaponParticleSystem.Play();
+            FireShot();
+            _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
+        }
+        private void FireShot()
+        {
+            var bulletsInSameShot = Mathf.Min(BulletsPerShot(), _currentAmmo);
+            
+            for (var i = 0; i < bulletsInSameShot; i++)
+            {
+                FireSingleBullet();
+                _currentAmmo--;
+            }
+        }
+
+        private void FireSingleBullet()
+        {
+            var shootingDirection = CalculateSpreadAndDirection();
+            var bulletProjectile = _bulletManager.GetBullet(bulletSpawn.position);
+
+            if (!bulletProjectile.TryGetComponent<Rigidbody>(out var rb)) return;
+            
+            InitializeBulletPhysics(rb, shootingDirection);
+        }
+
+        private void InitializeBulletPhysics(Rigidbody rb, Vector3 shootingDirection)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.transform.forward = shootingDirection;
+            rb.AddForce(shootingDirection * weaponSettings.bulletVelocity, ForceMode.Impulse);
+        }
+
+        private Vector3 CalculateSpreadAndDirection()
+        {
+            if (Camera.main == null) return Vector3.zero;
+            
+            var targetPoint = GetTargetPoint();
+            var direction = targetPoint - bulletSpawn.position;
+            var spread = CalculateSpread();
+
+            return (direction + spread).normalized;
+        }
+
+        private Vector3 GetTargetPoint()
+        {
+            var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            return Physics.Raycast(ray, out var hit) 
+                ? hit.point 
+                : ray.GetPoint(weaponSettings.maxShootDistance);
+        }
+
+        private Vector3 CalculateSpread()
+        {
+            var x = UnityEngine.Random.Range(-weaponSettings.spreadIntensity, weaponSettings.spreadIntensity);
+            var y = UnityEngine.Random.Range(-weaponSettings.spreadIntensity, weaponSettings.spreadIntensity);
+            return bulletSpawn.TransformDirection(new Vector3(x, y, 0));
+        }
+
+        private int BulletsPerShot()
+        {
+            return weaponShootMode switch
+            {
+                ShootMode.Single => 1,
+                ShootMode.Auto => 1,
+                ShootMode.Shotgun => 6,
+                _ => 0
+            };
+        }
+
+        public async UniTask ReloadAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _isReloading = true;
+                _audioManager.PlayWeaponSound(weaponSettings.reloadSound);
+            
+                var state = weaponAnimancer.Play(weaponSettings.reloadAnimation, 0.25f);
+                await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), 
+                    cancellationToken: cancellationToken);
+
+                UpdateAmmoAfterReload();
+                _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("Reload operation was cancelled");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"ReloadAsync(): {e.Message}");
+            }
+            finally
+            {
+                _isReloading = false;
+                _weaponStateMachine.TrySetState<WeaponStateIdle>();
+            }
+        }
+
+        private void UpdateAmmoAfterReload()
+        {
+            if (_stackAmmo >= weaponSettings.clipSize - _currentAmmo)
+            {
+                _stackAmmo -= weaponSettings.clipSize - _currentAmmo;
+                _currentAmmo = weaponSettings.clipSize;
+            }
+            else
+            {
+                _currentAmmo += _stackAmmo;
+                _stackAmmo = 0;
+            }
+        }
+        public bool CanShoot()
+        {
+            if (weaponShootMode != ShootMode.Auto)
+            {
+                return (!_isReloading && !_isShooting && _isShootingButtonHolding && 
+                        !weaponAnimancer.IsPlaying(weaponSettings.shootAnimation));
+            }
+            return (!_isReloading && !_isShooting && _isShootingButtonHolding);
+        }
+
+        public bool CanReload()
+        {
+            return (!_isReloading && _currentAmmo < weaponSettings.clipSize && _stackAmmo > 0);
+        }
+
+        public bool ReadyToAutoReload()
+        {
+            return (_currentAmmo <= 0 && _stackAmmo > 0);
+        }
+
+        public bool EquipInProcess()
+        {
+            return _isEquipping;
+        }
+
+        public bool ReloadingInProcess()
+        {
+            return _isReloading;
+        }
+
+        public bool ShootingInProcess()
+        {
+            return _isShooting;
+        }
+
+        private enum ShootMode
+        {
+            Single,
+            Auto,
+            Shotgun,
+        }
+    }
+}
