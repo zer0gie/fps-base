@@ -30,10 +30,6 @@ namespace Code.Weapon
         private int _stackAmmo;
         
         private bool _isShootingButtonHolding;
-        private bool _isReloading;
-        private bool _isShooting;
-        private bool _isEquipping;
-        private bool _weaponInitialized;
 
         [Header("Bullet Settings")] 
         [SerializeField] private GameObject bulletPrefab;
@@ -65,28 +61,16 @@ namespace Code.Weapon
             _weaponParticleSystem = muzzleEffect.GetComponent<ParticleSystem>();
 
             InitializeWeaponStateMachine();
-
-            UniTask.SwitchToMainThread();
         }
         protected void OnEnable()
         {
+            UniTask.SwitchToMainThread();
             _signalBus.Subscribe<FireActionStartedSignal>(OnFireStarted);
             _signalBus.Subscribe<FireActionCancelledSignal>(OnFireCancelled);
             _signalBus.Subscribe<ReloadPerformedSignal>(OnReloadPerformed);
         
             _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
             _uiManager.ShowAmmoPanel();
-            
-            if (!_weaponInitialized)
-            {
-                _isEquipping = false;
-                _isShootingButtonHolding = false;
-                _isReloading = false;
-                _isShooting = false;
-                
-                _weaponInitialized = true;
-                return;
-            }
             
             _weaponStateMachine.TrySetState<WeaponStateEquip>();
         }
@@ -132,12 +116,9 @@ namespace Code.Weapon
         {
             try
             {
-                _isEquipping = true;
                 var state = weaponAnimancer.Play(weaponSettings.takeAnimation, 0.25f);
                 await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), cancellationToken: cancellationToken);
                 
-                _isEquipping = false;
-                _weaponStateMachine.TrySetState<WeaponStateIdle>();
             }
             catch (OperationCanceledException)
             {
@@ -146,10 +127,6 @@ namespace Code.Weapon
             catch (Exception e)
             {
                 Debug.LogError($"EquipWeaponAsync(): {e.Message}");
-            }
-            finally
-            {
-                _isEquipping = false;
             }
         }
         public void Idle()
@@ -161,45 +138,45 @@ namespace Code.Weapon
         {
             try
             {
-                _isShooting = true;
 
                 if (_currentAmmo <= 0) // Empty magazine
                 {
                     _audioManager.PlayWeaponSound(weaponSettings.emptyMagazineSound);
                     await UniTask.Delay(EMPTY_MAGAZINE_SOUND_DELAY, 
                         cancellationToken: cancellationToken);
-                    _isShooting = false;
-                    _weaponStateMachine.TrySetState<WeaponStateIdle>();
+                    
                     return;
                 }
-                
-                if (weaponShootMode is ShootMode.Auto)
+                switch (weaponShootMode)
                 {
-                    while (_isShootingButtonHolding && _currentAmmo > 0)
-                    {
-                        weaponAnimancer.Stop();
+                    case ShootMode.Auto:
+                        while (_isShootingButtonHolding && _currentAmmo > 0)
+                        {
+                            weaponAnimancer.Stop();
+                            var autoState = weaponAnimancer.Play(weaponSettings.shootAnimation);
+                            ExecuteShot();
+                            
+                            await UniTask.WaitWhile(() => autoState.IsPlayingAndNotEnding(),
+                                cancellationToken: cancellationToken);
+                        }
+                        break;
+                    
+                    case ShootMode.Single:
+                    case ShootMode.Shotgun:
                         var state = weaponAnimancer.Play(weaponSettings.shootAnimation);
                         ExecuteShot();
                         
-                        await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(),
+                        await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), 
                             cancellationToken: cancellationToken);
-                    }
+                        break;
+                    default:
+                        Debug.LogError("WEAPON ERROR: Unknown ShootMode");
+                        break;
                 }
-                if (weaponShootMode is ShootMode.Single or ShootMode.Shotgun)
-                {
-                    var state = weaponAnimancer.Play(weaponSettings.shootAnimation);
-                    ExecuteShot();
-                    
-                    await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), 
-                        cancellationToken: cancellationToken);
-                }
-                _isShooting = false;
-                _weaponStateMachine.TrySetState<WeaponStateIdle>();
             }
             catch (OperationCanceledException)
             {
                 Debug.Log("Shooting operation was cancelled");
-                _isShooting = false;
             }
             catch (Exception e)
             {
@@ -283,7 +260,6 @@ namespace Code.Weapon
         {
             try
             {
-                _isReloading = true;
                 _audioManager.PlayWeaponSound(weaponSettings.reloadSound);
             
                 var state = weaponAnimancer.Play(weaponSettings.reloadAnimation, 0.25f);
@@ -301,11 +277,6 @@ namespace Code.Weapon
             {
                 Debug.LogError($"ReloadAsync(): {e.Message}");
             }
-            finally
-            {
-                _isReloading = false;
-                _weaponStateMachine.TrySetState<WeaponStateIdle>();
-            }
         }
 
         private void UpdateAmmoAfterReload()
@@ -321,41 +292,25 @@ namespace Code.Weapon
                 _stackAmmo = 0;
             }
         }
+        public bool CanEquip()
+        {
+            return !weaponAnimancer.IsPlaying(weaponSettings.takeAnimation);
+        }
         public bool CanShoot()
         {
-            if (weaponShootMode != ShootMode.Auto)
-            {
-                return (!_isReloading && !_isShooting && _isShootingButtonHolding && 
-                        !weaponAnimancer.IsPlaying(weaponSettings.shootAnimation));
-            }
-            return (!_isReloading && !_isShooting && _isShootingButtonHolding);
+            return !weaponAnimancer.IsPlaying(weaponSettings.shootAnimation);
         }
 
         public bool CanReload()
         {
-            return (!_isReloading && _currentAmmo < weaponSettings.clipSize && _stackAmmo > 0);
+            return (!weaponAnimancer.IsPlaying(weaponSettings.reloadAnimation) && _currentAmmo < weaponSettings.clipSize && _stackAmmo > 0);
         }
 
         public bool ReadyToAutoReload()
         {
             return (_currentAmmo <= 0 && _stackAmmo > 0);
         }
-
-        public bool EquipInProcess()
-        {
-            return _isEquipping;
-        }
-
-        public bool ReloadingInProcess()
-        {
-            return _isReloading;
-        }
-
-        public bool ShootingInProcess()
-        {
-            return _isShooting;
-        }
-
+        
         private enum ShootMode
         {
             Single,
