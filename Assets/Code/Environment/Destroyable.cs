@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Weapon
+namespace Code.Environment
 {
     public class Destroyable : MonoBehaviour
     {

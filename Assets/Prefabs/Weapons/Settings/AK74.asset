@@ -22,6 +22,7 @@ MonoBehaviour:
   shootingSound: {fileID: 8300000, guid: 2546be108608d394bafdb3ca63454561, type: 3}
   reloadSound: {fileID: 8300000, guid: cc51aa8bd46a7e64aa377fbb00e6221a, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 1d1c77a3e0c418d41ac583b348820d8f, type: 3}
+  equipSound: {fileID: 8300000, guid: eeeb21121e158e143b2473b3745d0669, type: 3}
   idleAnimation:
     _FadeDuration: 0.25
     _Speed: 1

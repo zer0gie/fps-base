@@ -21,7 +21,6 @@ namespace Code.Weapon
         // Bullet impact pooling
         private Queue<GameObject> _availableImpacts;
         private const int BULLET_IMPACT_POOL_SIZE = 20;
-        private const float IMPACT_LIFETIME = 40;
 
         [Inject]
         public void Init(DiContainer container, Bullet.BulletFactory bulletFactory)
@@ -110,7 +109,6 @@ namespace Code.Weapon
         }
         public void Dispose()
         {
-            StopAllCoroutines();
             while (_availableBullets?.Count > 0)
             {
                 var bullet = _availableBullets.Dequeue();

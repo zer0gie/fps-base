@@ -17,11 +17,12 @@ MonoBehaviour:
   stackSize: 76
   spreadIntensity: 1
   maxShootDistance: 50
-  bulletVelocity: 50
+  bulletVelocity: 200
   recoilAmount: 2
-  shootingSound: {fileID: 8300000, guid: c0d55af200db23b47b678220f480efc9, type: 3}
-  reloadSound: {fileID: 8300000, guid: 1092b669e95a80f4da30f62b9140e9c9, type: 3}
-  emptyMagazineSound: {fileID: 8300000, guid: 5cb82a11f38e92146b2d7b690a7f2d09, type: 3}
+  shootingSound: {fileID: 8300000, guid: 2af0a88836088bf4b8ccdeaf5b665d36, type: 3}
+  reloadSound: {fileID: 8300000, guid: 743f30d02b826c14a99fe46a1ef1a195, type: 3}
+  emptyMagazineSound: {fileID: 8300000, guid: 1d1c77a3e0c418d41ac583b348820d8f, type: 3}
+  equipSound: {fileID: 8300000, guid: eeeb21121e158e143b2473b3745d0669, type: 3}
   idleAnimation:
     _FadeDuration: 0.25
     _Speed: 1

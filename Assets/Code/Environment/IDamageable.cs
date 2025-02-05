@@ -1,6 +1,6 @@
 
 
-namespace Code.Weapon
+namespace Code.Environment
 {
      public interface IDamageable
      {

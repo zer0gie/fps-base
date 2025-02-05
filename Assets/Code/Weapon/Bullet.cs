@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using Cysharp.Threading.Tasks;
+using Code.Environment;
 using UnityEngine;
 using Zenject;
 
@@ -12,9 +12,10 @@ namespace Code.Weapon
         private IBulletManager _bulletManager;
 
         // Settings
-        private readonly float _damage9M = 20f;
+        private const float BULLET_DAMAGE = 20f;
         private readonly LayerMask _wallLayer = 6;
         private readonly LayerMask _destroyableLayer = 7;
+        private readonly LayerMask _markLayer = 8;
         
         private Coroutine _autoReturn;
         private const float BULLET_LIFETIME = 10;
@@ -42,27 +43,37 @@ namespace Code.Weapon
             if (hittedObject.gameObject.TryGetComponent(out IDamageable damageable))
             {
                 Debug.Log("Hit and damaged: " + damageable);
-                damageable.TakeDamage(_damage9M);
                 StopCoroutine(_autoReturn);
+                damageable.TakeDamage(BULLET_DAMAGE);
                 _bulletManager.ReturnBulletToPool(this);
                 return;
             }
             if (hittedObject.gameObject.layer == _wallLayer)
             {
                 print("Hit " + hittedObject.gameObject.name);
-                CreateBulletImpactEffect(hittedObject);
                 StopCoroutine(_autoReturn);
+                CreateBulletImpactEffect(hittedObject);
                 _bulletManager.ReturnBulletToPool(this);
                 return;
             }
             if (hittedObject.gameObject.layer == _destroyableLayer)
             {
                 print("Explode " + hittedObject.gameObject.name);
+                StopCoroutine(_autoReturn);
                 if (hittedObject.gameObject.TryGetComponent<Destroyable>(out var destroyable))
                 {
                     destroyable.Explode();
                 }
+                _bulletManager.ReturnBulletToPool(this);
+            }
+            if (hittedObject.gameObject.layer == _markLayer)
+            {
+                print("Hit " + hittedObject.gameObject.name);
                 StopCoroutine(_autoReturn);
+                if (hittedObject.gameObject.TryGetComponent<Mark>(out var mark))
+                {
+                    mark.HitMark();
+                }
                 _bulletManager.ReturnBulletToPool(this);
             }
         }
