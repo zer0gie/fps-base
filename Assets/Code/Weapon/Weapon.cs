@@ -126,11 +126,11 @@ namespace Code.Weapon
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("Weapon equipping was cancelled");
+                Debug.Log("Weapon.EquipAsync() was cancelled");
             }
             catch (Exception e)
             {
-                Debug.LogError($"EquipWeaponAsync(): {e.Message}");
+                Debug.LogError($"ERROR Weapon.EquipWeaponAsync(): {e.Message}");
             }
         }
         public void Idle()
@@ -180,11 +180,11 @@ namespace Code.Weapon
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("Shooting operation was cancelled");
+                Debug.Log("Weapon.ShootingAsync() was cancelled");
             }
             catch (Exception e)
             {
-                Debug.LogError($"ShootingAsync(): {e.Message}");
+                Debug.LogError($"ERROR Weapon.ShootingAsync(): {e.Message}");
             }
         }
         private void ExecuteShot()
@@ -271,11 +271,11 @@ namespace Code.Weapon
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("Reload operation was cancelled");
+                Debug.Log("Weapon.ReloadAsync() was cancelled");
             }
             catch (Exception e)
             {
-                Debug.LogError($"ReloadAsync(): {e.Message}");
+                Debug.LogError($"ERROR Weapon.ReloadAsync(): {e.Message}");
             }
         }
 

@@ -18,10 +18,11 @@ MonoBehaviour:
   spreadIntensity: 0.05
   maxShootDistance: 100
   bulletVelocity: 260
-  recoilAmount: 0.3
+  recoilAmount: 0.4
   shootingSound: {fileID: 8300000, guid: 4cf04828d48f50c4b9f4cf24c40e55a4, type: 3}
   reloadSound: {fileID: 8300000, guid: 3b3355af326aa1343925423049a8a2c5, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 1d1c77a3e0c418d41ac583b348820d8f, type: 3}
+  equipSound: {fileID: 8300000, guid: eeeb21121e158e143b2473b3745d0669, type: 3}
   idleAnimation:
     _FadeDuration: 0.25
     _Speed: 1
