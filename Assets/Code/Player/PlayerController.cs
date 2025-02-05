@@ -22,6 +22,9 @@ namespace Code.Player
         private float _xRotation;
         private float _mouseX;
         private float _mouseY;
+        
+        private float _recoilReturnSpeed = 20f;
+        private float _currentRecoil;
 
         private Vector3 _fallVelocity;
         private Vector3 _currentVelocity;
@@ -49,6 +52,11 @@ namespace Code.Player
         {
             CameraRotation();
         }
+
+        public void ApplyRecoil(float recoilAmount)
+        {
+            _currentRecoil += recoilAmount;
+        }
         private void HandleMovement()
         {
             if (_chController.isGrounded)
@@ -66,8 +74,11 @@ namespace Code.Player
 
             _mouseX = inputLook.x * _mouseSensitivity;
             _mouseY = inputLook.y * _mouseSensitivity;
-
+            
+            _currentRecoil = Mathf.Lerp(_currentRecoil, 0f, _recoilReturnSpeed * Time.deltaTime);
+            
             _xRotation -= _mouseY;
+            _xRotation -= _currentRecoil;
             _xRotation = Mathf.Clamp(_xRotation, -89f, 89f);
 
             cameraTarget.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);

@@ -18,6 +18,7 @@ MonoBehaviour:
   spreadIntensity: 1
   maxShootDistance: 50
   bulletVelocity: 50
+  recoilAmount: 2
   shootingSound: {fileID: 8300000, guid: c0d55af200db23b47b678220f480efc9, type: 3}
   reloadSound: {fileID: 8300000, guid: 1092b669e95a80f4da30f62b9140e9c9, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 5cb82a11f38e92146b2d7b690a7f2d09, type: 3}

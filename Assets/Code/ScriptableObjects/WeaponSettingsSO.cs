@@ -12,9 +12,11 @@ namespace Code.ScriptableObjects
         public float spreadIntensity;
         public float maxShootDistance;
         public float bulletVelocity;
+        public float recoilAmount;
         public AudioClip shootingSound;
         public AudioClip reloadSound;
         public AudioClip emptyMagazineSound;
+        public AudioClip equipSound;
         public ClipTransition idleAnimation;
         public ClipTransition shootAnimation;
         public ClipTransition reloadAnimation;

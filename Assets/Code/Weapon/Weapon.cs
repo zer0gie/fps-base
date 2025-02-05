@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Animancer;
 using Code.Audio;
+using Code.Player;
 using Code.ScriptableObjects;
 using Code.UI;
 using Code.WeaponFSM;
@@ -44,17 +45,19 @@ namespace Code.Weapon
         private IUIManager _uiManager;
         private SignalBus _signalBus;
         private IBulletManager _bulletManager;
+        private PlayerController _playerController;
         
         private const int EMPTY_MAGAZINE_SOUND_DELAY = 150;
 
         [Inject]
         public void Construct(IAudioManager audioManager, SignalBus signalBus, IUIManager uiManager,
-            IBulletManager bulletManager)
+            IBulletManager bulletManager, PlayerController playerController)
         {
             _audioManager = audioManager;
             _signalBus = signalBus;
             _uiManager = uiManager;
             _bulletManager = bulletManager;
+            _playerController = playerController;
 
             _currentAmmo = weaponSettings.clipSize;
             _stackAmmo = weaponSettings.stackSize;
@@ -116,6 +119,7 @@ namespace Code.Weapon
         {
             try
             {
+                _audioManager.PlayWeaponSound(weaponSettings.equipSound);
                 var state = weaponAnimancer.Play(weaponSettings.takeAnimation, 0.25f);
                 await UniTask.WaitWhile(() => state.IsPlayingAndNotEnding(), cancellationToken: cancellationToken);
                 
@@ -187,6 +191,7 @@ namespace Code.Weapon
         {
             _audioManager.PlayWeaponSound(weaponSettings.shootingSound);
             _weaponParticleSystem.Play();
+            _playerController.ApplyRecoil(weaponSettings.recoilAmount);
             FireShot();
             _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
         }
