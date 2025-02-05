@@ -1,4 +1,3 @@
-
 namespace Code.WeaponFSM
 {
     public sealed class WeaponStateIdle : WeaponState

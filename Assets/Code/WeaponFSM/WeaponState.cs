@@ -1,4 +1,3 @@
-
 namespace Code.WeaponFSM
 {
     public abstract class WeaponState : IWeaponState

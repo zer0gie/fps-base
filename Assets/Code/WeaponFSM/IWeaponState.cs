@@ -1,5 +1,3 @@
-using Cysharp.Threading.Tasks;
-
 namespace Code.WeaponFSM
 {
     public interface IWeaponState

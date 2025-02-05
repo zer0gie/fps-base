@@ -139,7 +139,7 @@ namespace Code.Weapon
             try
             {
 
-                if (_currentAmmo <= 0) // Empty magazine
+                if (_currentAmmo <= 0) // Empty magazine handle
                 {
                     _audioManager.PlayWeaponSound(weaponSettings.emptyMagazineSound);
                     await UniTask.Delay(EMPTY_MAGAZINE_SOUND_DELAY, 
@@ -204,21 +204,16 @@ namespace Code.Weapon
         private void FireSingleBullet()
         {
             var shootingDirection = CalculateSpreadAndDirection();
-            var bulletProjectile = _bulletManager.GetBullet(bulletSpawn.position);
+            var bullet = _bulletManager.GetBullet(bulletSpawn.position);
 
-            if (!bulletProjectile.TryGetComponent<Rigidbody>(out var rb)) return;
+            if (!bullet.TryGetComponent<Rigidbody>(out var rb)) return;
             
-            InitializeBulletPhysics(rb, shootingDirection);
-        }
-
-        private void InitializeBulletPhysics(Rigidbody rb, Vector3 shootingDirection)
-        {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.transform.forward = shootingDirection;
             rb.AddForce(shootingDirection * weaponSettings.bulletVelocity, ForceMode.Impulse);
-        }
 
+        }
         private Vector3 CalculateSpreadAndDirection()
         {
             if (Camera.main == null) return Vector3.zero;

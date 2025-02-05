@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using Zenject;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 namespace Code.Weapon
 {
@@ -13,14 +15,13 @@ namespace Code.Weapon
         private Bullet.BulletFactory _bulletFactory;
 
         // Bullet pooling
-        private Bullet[] _bulletPool;
+        private Queue<Bullet> _availableBullets;
         private const int BULLET_POOL_SIZE = 30;
-        private int _currentBulletPoolIndex;
 
         // Bullet impact pooling
-        private GameObject[] _bulletImpactPool;
+        private Queue<GameObject> _availableImpacts;
         private const int BULLET_IMPACT_POOL_SIZE = 20;
-        private int _currentBulletImpactPoolIndex;
+        private const float IMPACT_LIFETIME = 40;
 
         [Inject]
         public void Init(DiContainer container, Bullet.BulletFactory bulletFactory)
@@ -30,27 +31,37 @@ namespace Code.Weapon
         }
         public void Initialize()
         {
-            _bulletPool = new Bullet[BULLET_POOL_SIZE];
-            _bulletImpactPool = new GameObject[BULLET_IMPACT_POOL_SIZE];
+            _availableBullets = new Queue<Bullet>(BULLET_POOL_SIZE);
+            _availableImpacts = new Queue<GameObject>(BULLET_IMPACT_POOL_SIZE);
 
             for (var i = 0; i < BULLET_POOL_SIZE; i++)
             {
-                _bulletPool[i] = _bulletFactory.Create();
-                _bulletPool[i].transform.SetParent(transform);
-                _bulletPool[i].gameObject.SetActive(false);
+                var bullet = _bulletFactory.Create();
+                bullet.transform.SetParent(transform);
+                bullet.gameObject.SetActive(false);
+                _availableBullets.Enqueue(bullet);
             }
+
             for (var i = 0; i < BULLET_IMPACT_POOL_SIZE; i++)
             {
-                _bulletImpactPool[i] = _container.InstantiatePrefab(bulletHolePrefab, transform);
-                _bulletImpactPool[i].transform.SetParent(transform);
-                _bulletImpactPool[i].SetActive(false);
+                var impact = _container.InstantiatePrefab(bulletHolePrefab, transform);
+                impact.transform.SetParent(transform);
+                impact.SetActive(false);
+                _availableImpacts.Enqueue(impact);
             }
         }
         public Bullet GetBullet(Vector3 position)
         {
-            var bullet = _bulletPool[_currentBulletPoolIndex];
-
-            _currentBulletPoolIndex = (_currentBulletPoolIndex + 1) % BULLET_POOL_SIZE;
+            Bullet bullet;
+            if (_availableBullets.Count == 0)
+            {
+                bullet = _bulletFactory.Create();
+                bullet.transform.SetParent(transform);
+            }
+            else
+            {
+                bullet = _availableBullets.Dequeue();
+            }
 
             bullet.transform.SetPositionAndRotation(position, Quaternion.identity);
         
@@ -64,39 +75,59 @@ namespace Code.Weapon
 
             return bullet;
         }
+        public void ReturnBulletToPool(Bullet bullet)
+        {
+            if (!bullet) return;
+            
+            bullet.gameObject.SetActive(false);
+            _availableBullets.Enqueue(bullet);
+        }
         public GameObject GetBulletImpactEffect()
         {
-            var impactEffect = _bulletImpactPool[_currentBulletImpactPoolIndex];
+            GameObject impact;
+            if (_availableImpacts.Count == 0)
+            {
+                impact = _container.InstantiatePrefab(bulletHolePrefab, transform);
+                impact.transform.SetParent(transform);
+            }
+            else
+            {
+                impact = _availableImpacts.Dequeue();
+            }
 
-            _currentBulletImpactPoolIndex = (_currentBulletImpactPoolIndex + 1) % BULLET_IMPACT_POOL_SIZE;
+            impact.SetActive(true);
+            ReturnImpactToPoolAfterDelay(impact).Forget();
+            return impact;
+        }
 
-            impactEffect.SetActive(true);
-
-            return impactEffect;
+        private async UniTask ReturnImpactToPoolAfterDelay(GameObject impact)
+        {
+            await UniTask.WaitForSeconds(10);
+            if (!impact) return;
+            
+            impact.SetActive(false);
+            _availableImpacts.Enqueue(impact);   
         }
         public void Dispose()
         {
-            if (_bulletPool != null)
+            StopAllCoroutines();
+            while (_availableBullets?.Count > 0)
             {
-                for (var i = 0; i < BULLET_POOL_SIZE; i++)
+                var bullet = _availableBullets.Dequeue();
+                if (bullet != null)
                 {
-                    if (_bulletPool[i] != null)
-                    {
-                        Destroy(_bulletPool[i].gameObject);
-                    }
+                    Destroy(bullet.gameObject);
                 }
             }
 
-            if (_bulletImpactPool == null) return;
-        
-            for (var i = 0; i < BULLET_IMPACT_POOL_SIZE; i++)
+            while (_availableImpacts?.Count > 0)
             {
-                if (_bulletImpactPool[i] != null)
+                var impact = _availableImpacts.Dequeue();
+                if (impact != null)
                 {
-                    Destroy(_bulletImpactPool[i]);
+                    Destroy(impact);
                 }
             }
-        
         }
     }
 }

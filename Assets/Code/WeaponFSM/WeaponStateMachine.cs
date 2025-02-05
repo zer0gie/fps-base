@@ -31,7 +31,7 @@ namespace Code.WeaponFSM
             var type = typeof(T);
             if (type == CurrentWeaponState.GetType())
             {
-                Debug.Log($"WEAPON_FSM: {CurrentWeaponState} already is current.");
+                Debug.Log($"WEAPON_FSM: {CurrentWeaponState} already is active.");
                 return;
             }
             if (_states.TryGetValue(type, out var newWeaponState))

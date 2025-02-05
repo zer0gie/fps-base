@@ -6,5 +6,6 @@ namespace Code.Weapon
     {
         Bullet GetBullet(Vector3 position);
         GameObject GetBulletImpactEffect();
+        void ReturnBulletToPool(Bullet bullet);
     }
 }
