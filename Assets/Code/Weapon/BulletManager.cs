@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace Code.Weapon
@@ -95,13 +96,13 @@ namespace Code.Weapon
             }
 
             impact.SetActive(true);
-            ReturnImpactToPoolAfterDelay(impact).Forget();
+            ReturnImpactToPoolAfterDelay(impact, this.GetCancellationTokenOnDestroy()).Forget();
             return impact;
         }
 
-        private async UniTask ReturnImpactToPoolAfterDelay(GameObject impact)
+        private async UniTask ReturnImpactToPoolAfterDelay(GameObject impact, CancellationToken cancellationToken)
         {
-            await UniTask.WaitForSeconds(10);
+            await UniTask.WaitForSeconds(10, cancellationToken: cancellationToken);
             if (!impact) return;
             
             impact.SetActive(false);

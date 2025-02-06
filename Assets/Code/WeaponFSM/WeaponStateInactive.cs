@@ -3,7 +3,7 @@ namespace Code.WeaponFSM
 {
     public class WeaponStateInactive : WeaponState
     {
-        public WeaponStateInactive(WeaponStateMachine weaponStateMachine, Weapon.Weapon weapon) : base(weaponStateMachine, weapon)
+        public WeaponStateInactive(WeaponFSM weaponFsm, Weapon.Weapon weapon) : base(weaponFsm, weapon)
         {
         }
     

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Code.WeaponFSM
 {
-    public class WeaponStateMachine
+    public class WeaponFSM
     {
         private WeaponState CurrentWeaponState { get; set; }
     

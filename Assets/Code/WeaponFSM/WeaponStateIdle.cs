@@ -2,7 +2,7 @@ namespace Code.WeaponFSM
 {
     public sealed class WeaponStateIdle : WeaponState
     {
-        public WeaponStateIdle(WeaponStateMachine weaponStateMachine, Weapon.Weapon weapon) : base(weaponStateMachine, weapon)
+        public WeaponStateIdle(WeaponFSM weaponFsm, Weapon.Weapon weapon) : base(weaponFsm, weapon)
         {
         }
 

@@ -25,7 +25,7 @@ namespace Code.Weapon
 
         private ParticleSystem _weaponParticleSystem;
     
-        private WeaponStateMachine _weaponStateMachine;
+        private WeaponFSM.WeaponFSM _weaponFsm;
     
         private int _currentAmmo;
         private int _stackAmmo;
@@ -75,13 +75,13 @@ namespace Code.Weapon
             _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
             _uiManager.ShowAmmoPanel();
             
-            _weaponStateMachine.TrySetState<WeaponStateEquip>();
+            _weaponFsm.TrySetState<WeaponStateEquip>();
         }
         protected void OnDisable()
         {
             weaponAnimancer.Stop();
             _audioManager.StopWeaponSounds();
-            _weaponStateMachine.ForceSetState<WeaponStateInactive>();
+            _weaponFsm.ForceSetState<WeaponStateInactive>();
             
             _uiManager.HideAmmoPanel(); 
         
@@ -91,7 +91,7 @@ namespace Code.Weapon
         }
         private void OnReloadPerformed()
         {
-            _weaponStateMachine.TrySetState<WeaponStateReload>();
+            _weaponFsm.TrySetState<WeaponStateReload>();
         }
     
         private void OnFireCancelled()
@@ -102,17 +102,17 @@ namespace Code.Weapon
         private void OnFireStarted()
         {
             _isShootingButtonHolding = true;
-            _weaponStateMachine.TrySetState<WeaponStateShoot>();
+            _weaponFsm.TrySetState<WeaponStateShoot>();
         }
     
         private void InitializeWeaponStateMachine()
         {
-            _weaponStateMachine = new WeaponStateMachine();
-            _weaponStateMachine.AddState(new WeaponStateIdle(_weaponStateMachine, this));
-            _weaponStateMachine.AddState(new WeaponStateReload(_weaponStateMachine, this));
-            _weaponStateMachine.AddState(new WeaponStateShoot(_weaponStateMachine, this));
-            _weaponStateMachine.AddState(new WeaponStateEquip(_weaponStateMachine, this));
-            _weaponStateMachine.AddState(new WeaponStateInactive(_weaponStateMachine, this));
+            _weaponFsm = new WeaponFSM.WeaponFSM();
+            _weaponFsm.AddState(new WeaponStateIdle(_weaponFsm, this));
+            _weaponFsm.AddState(new WeaponStateReload(_weaponFsm, this));
+            _weaponFsm.AddState(new WeaponStateShoot(_weaponFsm, this));
+            _weaponFsm.AddState(new WeaponStateEquip(_weaponFsm, this));
+            _weaponFsm.AddState(new WeaponStateInactive(_weaponFsm, this));
         }
 
         public async UniTask EquipAsync(CancellationToken cancellationToken)

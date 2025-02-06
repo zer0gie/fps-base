@@ -7,7 +7,7 @@ namespace Code.WeaponFSM
     {
         private CancellationTokenSource _shootingCts;
         private bool _isCompleted;
-        public WeaponStateShoot(WeaponStateMachine weaponStateMachine, Weapon.Weapon weapon) : base(weaponStateMachine, weapon)
+        public WeaponStateShoot(WeaponFSM weaponFsm, Weapon.Weapon weapon) : base(weaponFsm, weapon)
         {
         }
 
@@ -30,7 +30,7 @@ namespace Code.WeaponFSM
             finally
             {
                 _isCompleted = true;
-                WeaponStateMachine.TrySetState<WeaponStateIdle>();
+                WeaponFsm.TrySetState<WeaponStateIdle>();
             }
         }
         public override void OnExitState()
