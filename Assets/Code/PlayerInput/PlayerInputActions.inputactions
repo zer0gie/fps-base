@@ -54,7 +54,7 @@
                     "name": "SecondSlotActivated",
                     "type": "Button",
                     "id": "1516387d-1641-425a-acb5-d486634955b3",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -63,7 +63,7 @@
                     "name": "ThirdSlotActivated",
                     "type": "Button",
                     "id": "b83188a0-8545-4c16-9128-adde88051a97",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -174,7 +174,7 @@
                     "id": "06453156-8a3c-4c38-9b82-458a7d669d68",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "NormalizeVector2,StickDeadzone",
+                    "processors": "StickDeadzone,ScaleVector2(x=10,y=10)",
                     "groups": "",
                     "action": "Look",
                     "isComposite": false,
@@ -215,6 +215,17 @@
                 },
                 {
                     "name": "",
+                    "id": "1c944906-4fc6-4263-b27d-b3dbfc9316cb",
+                    "path": "<Gamepad>/dpad/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FirstSlotActivated",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2b02403c-b843-4a16-99db-9c6911449754",
                     "path": "<Keyboard>/2",
                     "interactions": "",
@@ -226,8 +237,30 @@
                 },
                 {
                     "name": "",
+                    "id": "360722e2-c6aa-448f-8276-976ab3d447d7",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SecondSlotActivated",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "563ecd8f-6688-49fe-a6af-9731c0bea4fd",
                     "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ThirdSlotActivated",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "36f7d8ec-f9a6-44e0-80d7-a3556fed1106",
+                    "path": "<Gamepad>/dpad/right",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

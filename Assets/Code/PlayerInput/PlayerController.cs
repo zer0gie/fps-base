@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-namespace Code.Player
+namespace Code.PlayerInput
 {
     public class PlayerController : MonoBehaviour, IDisposable
     {

@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using Animancer;
 using Code.Audio;
-using Code.Player;
+using Code.PlayerInput;
 using Code.ScriptableObjects;
 using Code.UI;
 using Code.WeaponFSM;

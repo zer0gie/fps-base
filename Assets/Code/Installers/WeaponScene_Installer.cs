@@ -1,4 +1,4 @@
-using Code.Player;
+using Code.PlayerInput;
 using Code.UI;
 using Code.Weapon;
 using UnityEngine;

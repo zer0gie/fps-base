@@ -1,5 +1,5 @@
 using Code.Audio;
-using Code.Player;
+using Code.PlayerInput;
 using Zenject;
 
 namespace Code.Installers

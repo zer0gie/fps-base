@@ -1,5 +1,5 @@
 using System;
-using Code.Player;
+using Code.PlayerInput;
 using JetBrains.Annotations;
 using UnityEngine;
 using Zenject;

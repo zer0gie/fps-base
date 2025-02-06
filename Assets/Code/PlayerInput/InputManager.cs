@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
 
-namespace Code.Player
+namespace Code.PlayerInput
 {
     public class InputManager : IInitializable, IDisposable
     {
