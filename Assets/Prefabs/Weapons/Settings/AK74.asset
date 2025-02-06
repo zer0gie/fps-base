@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: AK - 74
   clipSize: 30
   stackSize: 180
-  spreadIntensity: 0.15
+  spreadIntensity: 0.05
   maxShootDistance: 500
   bulletVelocity: 500
   recoilAmount: 0.5

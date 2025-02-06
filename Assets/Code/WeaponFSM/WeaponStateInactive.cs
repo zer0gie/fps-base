@@ -7,6 +7,6 @@ namespace Code.WeaponFSM
         {
         }
     
-        public override bool CanExitState => Weapon.gameObject.activeSelf;
+        public override bool CanExitState => Weapon;
     }
 }
