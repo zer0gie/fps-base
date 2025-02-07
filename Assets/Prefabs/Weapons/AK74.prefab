@@ -256,7 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91cce1f3f43b74b489a490f83e8c9ee1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponSettings: {fileID: 11400000, guid: 3a7f3a4bf0a8c2141a0662c126d3ef3b, type: 2}
+  weaponConfig: {fileID: 11400000, guid: 3a7f3a4bf0a8c2141a0662c126d3ef3b, type: 2}
   bulletPrefab: {fileID: 7908113415660946260, guid: 6432c4d526efa834294b3b2c073b4198,
     type: 3}
   weaponShootMode: 1

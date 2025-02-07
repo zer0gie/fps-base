@@ -7,7 +7,6 @@ namespace Code.UI
     public class UIManager : MonoBehaviour, IUIManager, IDisposable
     {
         // Main
-        [SerializeField] private GameObject hud;
         [SerializeField] private GameObject ammoPanel;
         [SerializeField] private GameObject crosshair;
 
@@ -15,19 +14,15 @@ namespace Code.UI
         [SerializeField] private TextMeshProUGUI currentAmmoText;
         [SerializeField] private TextMeshProUGUI stackAmmoText;
 
-        public void ShowAmmoPanel()
+        public void ShowHUD()
         {
-            if (ammoPanel != null && !ammoPanel.activeSelf)
-            {
-                ammoPanel.SetActive(true);
-            }
+            if (ammoPanel) ammoPanel.SetActive(true);
+            if (crosshair) crosshair.SetActive(true);
         }
-        public void HideAmmoPanel()
+        public void HideHUD()
         {
-            if (ammoPanel != null && ammoPanel.activeSelf)
-            {
-                ammoPanel.SetActive(false);
-            }
+            if (ammoPanel) ammoPanel.SetActive(false);
+            if (crosshair) crosshair.SetActive(false);
         }
         public void UpdateAmmoPanel(int currentAmmo, int stackAmmo)
         {
@@ -41,21 +36,8 @@ namespace Code.UI
                 stackAmmoText.text = stackAmmo.ToString();
             }
         }
-        public void ShowHUD()
-        {
-            hud?.SetActive(true);
-        }
-        public void HideHUD()
-        {
-            hud?.SetActive(false);
-        }
         public void Dispose()
         {
-            if (hud != null)
-            {
-                Destroy(hud);
-            }
-
             if (ammoPanel != null)
             {
                 Destroy(ammoPanel);

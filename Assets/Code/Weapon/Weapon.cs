@@ -16,7 +16,7 @@ namespace Code.Weapon
     public class Weapon : MonoBehaviour
     {
         [Header("Configuration")] 
-        [SerializeField] private WeaponSettingsSO weaponSettings;
+        [SerializeField] private WeaponConfigSO weaponConfig;
         [SerializeField] private GameObject bulletPrefab;
         [SerializeField] private ShootMode weaponShootMode;
         
@@ -53,8 +53,8 @@ namespace Code.Weapon
             _bulletManager = bulletManager;
             _uiManager = uiManager;
             _audioManager = audioManager;
-            _currentAmmo = weaponSettings.clipSize;
-            _stackAmmo = weaponSettings.stackSize;
+            _currentAmmo = weaponConfig.clipSize;
+            _stackAmmo = weaponConfig.stackSize;
             _weaponParticleSystem = muzzleFlash.GetComponent<ParticleSystem>();
             InitializeWeaponStateMachine();
         }
@@ -69,7 +69,7 @@ namespace Code.Weapon
         protected void OnDisable()
         {
             _weaponFsm.ForceSetState<WeaponStateInactive>();
-            _uiManager.HideAmmoPanel(); 
+            _uiManager.HideHUD(); 
             _audioManager.StopWeaponSounds();
             _signalBus.Unsubscribe<FireActionStartedSignal>(OnFireStarted);
             _signalBus.Unsubscribe<FireActionCancelledSignal>(OnFireCancelled);
@@ -92,16 +92,16 @@ namespace Code.Weapon
         }
         public bool CanEquip()
         {
-            return !weaponAnimancer.IsPlaying(weaponSettings.takeAnimation);
+            return !weaponAnimancer.IsPlaying(weaponConfig.takeAnimation);
         }
         public bool CanShoot()
         {
-            return !weaponAnimancer.IsPlaying(weaponSettings.shootAnimation);
+            return !weaponAnimancer.IsPlaying(weaponConfig.shootAnimation);
         }
 
         public bool CanReload()
         {
-            return (!weaponAnimancer.IsPlaying(weaponSettings.reloadAnimation) && _currentAmmo < weaponSettings.clipSize && _stackAmmo > 0);
+            return (!weaponAnimancer.IsPlaying(weaponConfig.reloadAnimation) && _currentAmmo < weaponConfig.clipSize && _stackAmmo > 0);
         }
         public bool ReadyToAutoReload()
         {
@@ -113,10 +113,10 @@ namespace Code.Weapon
             EquipStateInProcess = true;
             try
             {
-                _audioManager.PlayWeaponSound(weaponSettings.equipSound);
-                var state = weaponAnimancer.Play(weaponSettings.takeAnimation);
+                _audioManager.PlayWeaponSound(weaponConfig.equipSound);
+                var state = weaponAnimancer.Play(weaponConfig.takeAnimation);
                 _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
-                _uiManager.ShowAmmoPanel();
+                _uiManager.ShowHUD();
                 await UniTask.WaitWhile(() => state.NormalizedTime < 1, cancellationToken: cancellationToken);
                 
                 EquipStateInProcess = false;
@@ -134,7 +134,7 @@ namespace Code.Weapon
         }
         public void Idle()
         {
-            weaponAnimancer.Play(weaponSettings.idleAnimation, 0.25f);
+            weaponAnimancer.Play(weaponConfig.idleAnimation, 0.25f);
         }
 
         public async UniTask ShootingAsync(CancellationToken cancellationToken)
@@ -145,7 +145,7 @@ namespace Code.Weapon
 
                 if (_currentAmmo <= 0) // Empty magazine handle
                 {
-                    _audioManager.PlayWeaponSound(weaponSettings.emptyMagazineSound);
+                    _audioManager.PlayWeaponSound(weaponConfig.emptyMagazineSound);
                     ShootStateInProcess = false;
                     _weaponFsm.TrySetState<WeaponStateIdle>();
                     return;
@@ -156,7 +156,7 @@ namespace Code.Weapon
                         while (_isShootingButtonHolding && _currentAmmo > 0)
                         {
                             weaponAnimancer.Stop();
-                            var autoState = weaponAnimancer.Play(weaponSettings.shootAnimation, 0.25f);
+                            var autoState = weaponAnimancer.Play(weaponConfig.shootAnimation, 0.25f);
                             ExecuteShot();
                             
                             await UniTask.WaitWhile(() => autoState.NormalizedTime < 1, 
@@ -168,7 +168,7 @@ namespace Code.Weapon
                     
                     case ShootMode.Single:
                     case ShootMode.Shotgun:
-                        var state = weaponAnimancer.Play(weaponSettings.shootAnimation, 0.25f);
+                        var state = weaponAnimancer.Play(weaponConfig.shootAnimation, 0.25f);
                         ExecuteShot();
                         
                         await UniTask.WaitWhile(() => state.NormalizedTime < 1,
@@ -193,9 +193,9 @@ namespace Code.Weapon
         }
         private void ExecuteShot()
         {
-            _audioManager.PlayWeaponSound(weaponSettings.shootingSound);
+            _audioManager.PlayWeaponSound(weaponConfig.shootingSound);
             _weaponParticleSystem.Play();
-            _playerController.ApplyRecoil(weaponSettings.recoilAmount);
+            _playerController.ApplyRecoil(weaponConfig.recoilAmount);
             FireShot();
             _uiManager.UpdateAmmoPanel(_currentAmmo, _stackAmmo);
         }
@@ -220,7 +220,7 @@ namespace Code.Weapon
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.transform.forward = shootingDirection;
-            rb.AddForce(shootingDirection * weaponSettings.bulletVelocity, ForceMode.Impulse);
+            rb.AddForce(shootingDirection * weaponConfig.bulletVelocity, ForceMode.Impulse);
 
         }
         private Vector3 CalculateSpreadAndDirection()
@@ -239,13 +239,13 @@ namespace Code.Weapon
             var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             return Physics.Raycast(ray, out var hit) 
                 ? hit.point 
-                : ray.GetPoint(weaponSettings.maxShootDistance);
+                : ray.GetPoint(weaponConfig.maxShootDistance);
         }
 
         private Vector3 CalculateSpread()
         {
-            var x = UnityEngine.Random.Range(-weaponSettings.spreadIntensity, weaponSettings.spreadIntensity);
-            var y = UnityEngine.Random.Range(-weaponSettings.spreadIntensity, weaponSettings.spreadIntensity);
+            var x = UnityEngine.Random.Range(-weaponConfig.spreadIntensity, weaponConfig.spreadIntensity);
+            var y = UnityEngine.Random.Range(-weaponConfig.spreadIntensity, weaponConfig.spreadIntensity);
             return bulletSpawn.TransformDirection(new Vector3(x, y, 0));
         }
 
@@ -265,8 +265,8 @@ namespace Code.Weapon
             ReloadStateInProcess = true;
             try
             {
-                _audioManager.PlayWeaponSound(weaponSettings.reloadSound);
-                var state = weaponAnimancer.Play(weaponSettings.reloadAnimation, 0.25f);
+                _audioManager.PlayWeaponSound(weaponConfig.reloadSound);
+                var state = weaponAnimancer.Play(weaponConfig.reloadAnimation, 0.25f);
                 await UniTask.WaitWhile(() => state.NormalizedTime < 1, cancellationToken: cancellationToken);
                 
                 UpdateAmmoAfterReload();
@@ -287,10 +287,10 @@ namespace Code.Weapon
 
         private void UpdateAmmoAfterReload()
         {
-            if (_stackAmmo >= weaponSettings.clipSize - _currentAmmo)
+            if (_stackAmmo >= weaponConfig.clipSize - _currentAmmo)
             {
-                _stackAmmo -= weaponSettings.clipSize - _currentAmmo;
-                _currentAmmo = weaponSettings.clipSize;
+                _stackAmmo -= weaponConfig.clipSize - _currentAmmo;
+                _currentAmmo = weaponConfig.clipSize;
             }
             else
             {

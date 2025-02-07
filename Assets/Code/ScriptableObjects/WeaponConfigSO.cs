@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Code.ScriptableObjects
 {
     [CreateAssetMenu()]
-    public class WeaponSettingsSO : ScriptableObject
+    public class WeaponConfigSO : ScriptableObject
     {
         public string weaponName;
         public int clipSize;
