@@ -1,5 +1,4 @@
 using Code.PlayerInput;
-using Code.UI;
 using Code.Weapon;
 using UnityEngine;
 using Zenject;
@@ -13,8 +12,6 @@ namespace Code.Installers
         [SerializeField] private GameObject bennelliM4;
 
         [SerializeField] private GameObject bulletManagerPrefab;
-        [SerializeField] private GameObject uiManagerPrefab;
-
         [SerializeField] private GameObject bulletPrefab;
 
         public override void InstallBindings()
@@ -26,9 +23,7 @@ namespace Code.Installers
             Container.Bind<PlayerController>().FromComponentInHierarchy().AsSingle().NonLazy();
 
             Container.BindInterfacesAndSelfTo<WeaponManager>().FromNewComponentOnNewGameObject().AsSingle().NonLazy();
-
-            Container.BindInterfacesAndSelfTo<UIManager>().FromComponentInNewPrefab(uiManagerPrefab).AsSingle().NonLazy();
-
+            
             Container.BindInterfacesAndSelfTo<BulletManager>().FromComponentInNewPrefab(bulletManagerPrefab).AsSingle().NonLazy();
 
             Container.BindFactory<Bullet, Bullet.BulletFactory>()

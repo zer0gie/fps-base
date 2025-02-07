@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Benelli M4
   clipSize: 12
   stackSize: 76
-  spreadIntensity: 1
+  spreadIntensity: 0.5
   maxShootDistance: 50
   bulletVelocity: 200
   recoilAmount: 2

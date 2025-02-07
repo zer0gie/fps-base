@@ -6,31 +6,17 @@ namespace Code.WeaponFSM
     public class WeaponStateReload : WeaponState
     {
         private CancellationTokenSource _reloadCts;
-        private bool _isCompleted;
         public WeaponStateReload(WeaponFSM weaponFsm, Weapon.Weapon weapon) : base(weaponFsm, weapon)
         {
         }
     
         public override bool CanEnterState => Weapon.CanReload();
-        public override bool CanExitState => _isCompleted;
+        public override bool CanExitState => !Weapon.ReloadStateInProcess;
         public override void OnEnterState()
         {
             _reloadCts = new CancellationTokenSource();
             
-            ReloadProcess().Forget(UnityEngine.Debug.LogException);
-        }
-        private async UniTask ReloadProcess()
-        {
-            _isCompleted = false;
-            try
-            {
-                await Weapon.ReloadAsync(_reloadCts.Token);
-            }
-            finally
-            {
-                _isCompleted = true;
-                WeaponFsm.TrySetState<WeaponStateIdle>();
-            }
+            Weapon.ReloadAsync(_reloadCts.Token).Forget(UnityEngine.Debug.LogException);
         }
         public override void OnExitState()
         {

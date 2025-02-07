@@ -6,7 +6,7 @@ namespace Code.Environment
     public class Mark : MonoBehaviour
     {
         private const float DURATION = 1f;
-        private const float MARK_HIT_DELAY = 4f;
+        private const float MARK_HIT_DELAY = 3f;
         [SerializeField] private Ease easeType = Ease.OutElastic;
 
         private bool _hasFallen;

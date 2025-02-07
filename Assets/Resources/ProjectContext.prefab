@@ -76,7 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0779947086f5121478c325b6900105c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testScriptPrefab: {fileID: 6692417568762431831, guid: 75e51c799b3946d44a58b5a327af48e8,
+  uiManagerPrefab: {fileID: 4774045281494295320, guid: 4a3edc1358e99b948bd5a9d7fe997d16,
     type: 3}
 --- !u!114 &3552416392119838089
 MonoBehaviour:

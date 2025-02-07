@@ -9947,10 +9947,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponSettings: {fileID: 11400000, guid: 4e71489195160fc47af585904ae65e57, type: 2}
-  weaponShootMode: 0
-  muzzleEffect: {fileID: 2378860273742529923}
   bulletPrefab: {fileID: 7908113415660946260, guid: 6432c4d526efa834294b3b2c073b4198,
     type: 3}
+  weaponShootMode: 0
+  muzzleFlash: {fileID: 2378860273742529923}
   bulletSpawn: {fileID: 4910002894452765825}
   weaponAnimancer: {fileID: -5164362807083120080}
 --- !u!33 &5791133974213349697

@@ -6,32 +6,17 @@ namespace Code.WeaponFSM
     public class WeaponStateShoot : WeaponState
     {
         private CancellationTokenSource _shootingCts;
-        private bool _isCompleted;
         public WeaponStateShoot(WeaponFSM weaponFsm, Weapon.Weapon weapon) : base(weaponFsm, weapon)
         {
         }
 
         public override bool CanEnterState => Weapon.CanShoot();
-        public override bool CanExitState => _isCompleted;
+        public override bool CanExitState => !Weapon.ShootStateInProcess;
         public override void OnEnterState()
         {
             _shootingCts = new CancellationTokenSource();
 
-            ShootProcess().Forget(UnityEngine.Debug.LogException);
-        }
-
-        private async UniTask ShootProcess()
-        {
-            _isCompleted = false;
-            try
-            {
-                await Weapon.ShootingAsync(_shootingCts.Token);
-            }
-            finally
-            {
-                _isCompleted = true;
-                WeaponFsm.TrySetState<WeaponStateIdle>();
-            }
+            Weapon.ShootingAsync(_shootingCts.Token).Forget(UnityEngine.Debug.LogException);
         }
         public override void OnExitState()
         {

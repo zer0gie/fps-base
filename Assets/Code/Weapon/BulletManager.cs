@@ -102,7 +102,7 @@ namespace Code.Weapon
 
         private async UniTask ReturnImpactToPoolAfterDelay(GameObject impact, CancellationToken cancellationToken)
         {
-            await UniTask.WaitForSeconds(10, cancellationToken: cancellationToken);
+            await UniTask.WaitForSeconds(7, cancellationToken: cancellationToken);
             if (!impact) return;
             
             impact.SetActive(false);

@@ -170,10 +170,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponSettings: {fileID: 11400000, guid: e33ee3934d298074999d1f335acf53be, type: 2}
-  weaponShootMode: 2
-  muzzleEffect: {fileID: 6715119463911877276}
   bulletPrefab: {fileID: 7908113415660946260, guid: 6432c4d526efa834294b3b2c073b4198,
     type: 3}
+  weaponShootMode: 2
+  muzzleFlash: {fileID: 6715119463911877276}
   bulletSpawn: {fileID: 5971056479787788907}
   weaponAnimancer: {fileID: -655111326014511059}
 --- !u!33 &1973545944995071510
