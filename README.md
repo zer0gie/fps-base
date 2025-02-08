@@ -2,7 +2,7 @@
 
 FPS Base - a simple FPS game example using UniTask, Animancer, DoTween and Zenject. This example provides fundamental mechanics for creating an FPS game, including character control, shooting, physics, and interactive objects.
 
-**NOTE:** This projevt made as a test, so the project has no best practices and must be used only as an example, not as a guide.
+**NOTE:** This project made as a test, has no best practices and must be used only as an example, not as a guide.
 
 <img src="https://github.com/user-attachments/assets/19aeff66-8e12-4cc4-9c02-230eb2c74b5e" width="800">
 
